@@ -4,30 +4,118 @@
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.css">
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+  <style>
+    table {
+      margin: auto;
+    }
+    td {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      border: 1px solid rgba(34,36,38,.1);
+      cursor: pointer;
+      position: relative;
+    }
+    .column {
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
+    }
+    .wrap {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      right: -20px;
+      top: -20px;
+      z-index: 800;
+    }
+    .point {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #eee;
+      right: -5px;
+      top: -5px;
+    }
   </style>
-
   <script>
     $(function() {
-      $('#command').submit(function(event) {
-        event.preventDefault();
-        let pos = $('#command input').val()
-        let p = parseInt(pos.split(',')[0])
-        let n = parseInt(pos.split(',')[1])
-        if (isNaN(p) || isNaN(n)) {
-          $('input', this).val('')
-          return false
+      let nums = _.range(16)
+      let table = $('#grid tbody')
+      for (let n of nums) {
+        table.append('<tr>')
+        n = 15 - n
+        for (let p of nums) {
+          let id = `${p}-${n}`
+          let html = ''
+          if ((p + n) % 2 === 0) {
+            html += `<td id='cell-${id}'>`
+            html += `<div class='wrap' id='${id}'></div>`
+            html += `<div class='point' id='point-${id}'></div>`
+            html += '</td>'
+          } else {
+            html += `<td id='cell-${id}'>`
+            html += '</td>'
+          }
+          table.append(html)
         }
-        let id = `${p}-${n}`
+        table.append('<tr>')
+      }
+
+      $('.wrap').hover(function(event) {
+        let id = $(this).attr('id')
+        let p = parseInt(id.split('-')[0])
+        let n = parseInt(id.split('-')[1])
+        $(`#point-${id}`).css('background', '#800')
+        $('#current').text(`[${p}, ${n}]`)
+      }, function(event) {
+        let id = $(this).attr('id')
+        $(`#point-${id}`).css('background', '#eee')
+        $('#current').text('')
+      })
+
+      $('.wrap').click(function(event) {
+        let id = $(this).attr('id')
+        window.current = id
+        sendCommand(id)
+
+        let keep = $('#keep').hasClass('active')
+        if (keep) {
+          let p = parseInt(id.split('-')[0])
+          let n = parseInt(id.split('-')[1])
+          $('#keep').text(`keep: [${p}, ${n}]`)
+        }
+      })
+
+      $('#keep').click(function(event) {
+        let active = $(this).hasClass('active')
+        if (!active) {
+          $(this).addClass('active')
+        } else {
+          $(this).removeClass('active')
+        }
+      })
+
+      setInterval(function(event) {
+        let keep = $('#keep').hasClass('active')
+        if (keep && window.current) {
+          let id = window.current
+          sendCommand(id)
+        }
+      }, 1000)
+
+      function sendCommand(id) {
         $.ajax({
           method: 'POST',
           url: '/command?id=' + id
         }).then(function(res) {
           console.log(res)
-          $('#history').append(`[${p}, ${n}]`)
+          let p = parseInt(id.split('-')[0])
+          let n = parseInt(id.split('-')[1])
+          $('#history').prepend(`- [${p}, ${n}] -`)
         })
-      })
+      }
     })
   </script>
 
@@ -35,17 +123,25 @@
 <body>
 
   <div class="ui grid centered">
-    <div class="eight wide column">
-      <form id="command" class="ui form">
-        <div class="field">
-          <label>Position</label>
-          <input type="text">
-        </div>
-      </form>
+    <div class="six wide column">
+      <br>
+      <p style="margin: 5px auto;">
+        current: <span id="current"></span>
+      </p>
+    </div>
+    <div class="six wide column">
+      <br>
+      <button id="keep" class="ui tiny toggle button">keep</button>
+    </div>
+    <div class="twelve wide column">
+      <p style="overflow: hidden; height: 40px; line-height: 20px;">history: <br><span id="history" style="white-space: nowrap;"></span></p>
     </div>
     <div class="sixteen wide column">
-      <ul id="history">
-      </ul>
+      <table id="grid">
+        <tbody>
+        </tbody>
+      </table>
+
     </div>
   </div>
 
