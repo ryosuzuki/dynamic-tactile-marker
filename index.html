@@ -1,0 +1,54 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+  </style>
+
+  <script>
+    $(function() {
+      $('#command').submit(function(event) {
+        event.preventDefault();
+        let pos = $('#command input').val()
+        let p = parseInt(pos.split(',')[0])
+        let n = parseInt(pos.split(',')[1])
+        if (isNaN(p) || isNaN(n)) {
+          $('input', this).val('')
+          return false
+        }
+        let id = `${p}-${n}`
+        $.ajax({
+          method: 'POST',
+          url: '/command?id=' + id
+        }).then(function(res) {
+          console.log(res)
+          $('#history').append(`[${p}, ${n}]`)
+        })
+      })
+    })
+  </script>
+
+</head>
+<body>
+
+  <div class="ui grid centered">
+    <div class="eight wide column">
+      <form id="command" class="ui form">
+        <div class="field">
+          <label>Position</label>
+          <input type="text">
+        </div>
+      </form>
+    </div>
+    <div class="sixteen wide column">
+      <ul id="history">
+      </ul>
+    </div>
+  </div>
+
+
+</body>
+</html>
