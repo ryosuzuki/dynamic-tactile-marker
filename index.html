@@ -30,6 +30,17 @@
       top: -20px;
       z-index: 800;
     }
+    #point-2-6, #point-2-12, #point-12-12, #point-12-6, #point-7-15, #point-7-1 {
+      border: 3px solid green;
+    }
+    #point-10-10 {
+      border: 3px solid blue;
+    }
+    #point-13-15 {
+      border: 3px solid red;
+    }
+
+
     .point {
       position: absolute;
       width: 10px;
@@ -79,13 +90,9 @@
         let id = $(this).attr('id')
         window.current = id
         sendCommand(id)
-
-        let keep = $('#keep').hasClass('active')
-        if (keep) {
-          let p = parseInt(id.split('-')[0])
-          let n = parseInt(id.split('-')[1])
-          $('#keep').text(`keep: [${p}, ${n}]`)
-        }
+        let p = parseInt(id.split('-')[0])
+        let n = parseInt(id.split('-')[1])
+        $('#keep').text(`keep: [${p}, ${n}]`)
       })
 
       $('#keep').click(function(event) {
@@ -103,7 +110,18 @@
           let id = window.current
           sendCommand(id)
         }
-      }, 1000)
+      }, 300)
+
+      $('#draw').click(function(event) {
+        draw()
+      });
+
+      function draw() {
+        // sendCommand('2-4')
+        // sendCommand('2-12')
+        // sendCommand('12-12')
+        // sendCommand('12-4')
+      }
 
       function sendCommand(id) {
         $.ajax({
@@ -132,6 +150,7 @@
     <div class="six wide column">
       <br>
       <button id="keep" class="ui tiny toggle button">keep</button>
+      <button id="draw" class="ui tiny button">Draw</button>
     </div>
     <div class="twelve wide column">
       <p style="overflow: hidden; height: 40px; line-height: 20px;">history: <br><span id="history" style="white-space: nowrap;"></span></p>
